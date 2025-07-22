@@ -12,9 +12,9 @@ Deploy your own Vite project with Vercel.
 
 _Live Example: https://vite-react-example.vercel.app_
 
-### Deploying From Your Terminal
+## class diagram for MCQ Question System
 
-You can deploy your new Vite project with a single command from your terminal using [Vercel CLI](https://vercel.com/download):
+<img src="https://github.com/heshanu/online_exam_quiz_system/blob/main/mcq%20question%20system%20class%20diagram-Page-2.drawio.png"/>
 
 ```shell
 $ vercel
