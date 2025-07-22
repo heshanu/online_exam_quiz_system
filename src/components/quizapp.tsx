@@ -1,128 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useEffect } from "react";
 import QuizWelcome from "./quizwelcome";
 import QuizQuestion from "./quizquestion";
 import QuizResults from "./quizresult";
 import { useToast } from "../hooks/use-toast";
-
-interface Question {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
-
-const sampleQuestions: Question[] = [
-  {
-    id: 1,
-    question: "What is the correct syntax for creating a function in JavaScript?",
-    options: [
-      "function myFunction() {}",
-      "create myFunction() {}",
-      "function = myFunction() {}",
-      "def myFunction() {}"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 2,
-    question: "Which method is used to add an element to the end of an array?",
-    options: [
-      "append()",
-      "push()",
-      "add()",
-      "insert()"
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 3,
-    question: "What does 'DOM' stand for?",
-    options: [
-      "Document Object Model",
-      "Data Object Management",
-      "Dynamic Object Method",
-      "Document Oriented Markup"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 4,
-    question: "Which of the following is NOT a JavaScript data type?",
-    options: [
-      "String",
-      "Boolean",
-      "Float",
-      "Number"
-    ],
-    correctAnswer: 2
-  },
-  {
-    id: 5,
-    question: "How do you declare a variable in JavaScript?",
-    options: [
-      "var variableName;",
-      "let variableName;",
-      "const variableName = value;",
-      "All of the above"
-    ],
-    correctAnswer: 3
-  },
-  {
-    id: 6,
-    question: "What is the output of: console.log(typeof null)?",
-    options: [
-      "null",
-      "undefined",
-      "object",
-      "boolean"
-    ],
-    correctAnswer: 2
-  },
-  {
-    id: 7,
-    question: "Which operator is used for strict equality comparison?",
-    options: [
-      "==",
-      "===",
-      "=",
-      "!="
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 8,
-    question: "What is the purpose of the 'use strict' directive?",
-    options: [
-      "Makes JavaScript run faster",
-      "Enables strict mode for cleaner code",
-      "Prevents errors from being thrown",
-      "Allows newer JavaScript features"
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 9,
-    question: "Which method converts a string to lowercase?",
-    options: [
-      "toLowerCase()",
-      "toLower()",
-      "lower()",
-      "stringToLower()"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 10,
-    question: "What is a closure in JavaScript?",
-    options: [
-      "A way to close the browser",
-      "A function with access to outer scope variables",
-      "A method to end a program",
-      "A type of loop"
-    ],
-    correctAnswer: 1
-  }
-];
+import { Question } from "../models/question";
 
 type QuizState = "welcome" | "quiz" | "results";
 
@@ -134,6 +16,10 @@ export default function QuizApp() {
   const [timeElapsed, setTimeElapsed] = useState<number>(0);
   const [timeRemaining, setTimeRemaining] = useState<number>(900); // 15 minutes
   const { toast } = useToast();
+
+  const [errors, setErrors] = useState(null);
+  const [sampleQuestions, setQuestions] = useState<Question[]>([]);
+  const [options2Array, setOpt] = useState<string[]>([]);
 
   // Timer effect
   useEffect(() => {
@@ -156,6 +42,33 @@ export default function QuizApp() {
       if (interval) clearInterval(interval);
     };
   }, [currentState, startTime]);
+
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/questions');
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data: Question[] = await response.json();
+        setQuestions(data);
+
+        if (data.length > 0 && data[currentQuestionIndex]?.options) {
+          // Directly set the options to the state
+          setOpt(
+            data[currentQuestionIndex].options
+              .map((option: string) => option.trim())
+          );
+        }
+      } catch (error) {
+          //setErrors();
+      }
+    };
+
+    fetchData();
+  }, [currentQuestionIndex]); // Include any other dependencies if necessary
 
   const handleStartQuiz = () => {
     setCurrentState("quiz");
@@ -244,6 +157,7 @@ export default function QuizApp() {
     return (
       <QuizQuestion
         question={currentQuestion}
+        questionOption={options2Array}
         currentQuestionIndex={currentQuestionIndex}
         totalQuestions={sampleQuestions.length}
         selectedAnswer={selectedAnswer}
@@ -264,7 +178,7 @@ export default function QuizApp() {
         score={calculateScore()}
         totalQuestions={sampleQuestions.length}
         timeElapsed={timeElapsed}
-        correctAnswers={sampleQuestions.map(q => q.correctAnswer)}
+        correctAnswers={sampleQuestions.map((q: { correctAnswer:number; }) => q.correctAnswer)}
         userAnswers={userAnswers}
         questions={sampleQuestions}
         onRetakeQuiz={handleRetakeQuiz}
@@ -273,5 +187,5 @@ export default function QuizApp() {
     );
   }
 
-  return null;
+  return errors;
 }

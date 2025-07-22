@@ -1,32 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radiogroup";
 import { Label } from "../components/ui/label";
 import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
-interface Question {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
-
-interface QuizQuestionProps {
-  question: Question;
-  currentQuestionIndex: number;
-  totalQuestions: number;
-  selectedAnswer?: number;
-  onAnswerSelect: (answerIndex: number) => void;
-  onNext: () => void;
-  onPrevious: () => void;
-  onFinish: () => void;
-  timeRemaining?: number;
-  isFirstQuestion: boolean;
-  isLastQuestion: boolean;
-}
+import { QuizQuestionProps } from "../models/quizQuestionProps";
 
 export default function QuizQuestion({
   question,
+  questionOption,
   currentQuestionIndex,
   totalQuestions,
   selectedAnswer,
@@ -45,6 +28,7 @@ export default function QuizQuestion({
   const handleAnswerChange = (value: string) => {
     onAnswerSelect(parseInt(value));
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4">
@@ -70,7 +54,7 @@ export default function QuizQuestion({
         <Card className="shadow-lg border-border/50">
           <CardHeader>
             <CardTitle className="text-xl leading-relaxed">
-              {question.question}
+              {question.questionText? question.questionText:null}
             </CardTitle>
           </CardHeader>
 
@@ -80,7 +64,7 @@ export default function QuizQuestion({
               onValueChange={handleAnswerChange}
               className="space-y-3"
             >
-              {question.options.map((option, index) => (
+              { questionOption.map((option, index) => (
                 <div key={index} className="group">
                   <Label
                     htmlFor={`option-${index}`}
@@ -105,7 +89,8 @@ export default function QuizQuestion({
                     </div>
                   </Label>
                 </div>
-              ))}
+              ))} 
+              { question.options}
             </RadioGroup>
 
             {/* Navigation */}
