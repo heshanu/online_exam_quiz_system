@@ -22,6 +22,7 @@ export default function QuizApp() {
   const { toast } = useToast();
   const [sampleQuestions, setSampleQuestions] = useState<ProcessedQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sampleData, setSampleData] = useState<Question[]>([]);
 
   // For Timer effect
   useEffect(() => {
@@ -61,6 +62,7 @@ export default function QuizApp() {
         }));
         
         setSampleQuestions(processed);
+        setSampleData(data);
       } catch (error) {
         toast({
           title: "Error",
@@ -70,7 +72,6 @@ export default function QuizApp() {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
@@ -186,7 +187,8 @@ export default function QuizApp() {
         timeElapsed={timeElapsed}
         correctAnswers={sampleQuestions.map(q => q.correctAnswer)}
         userAnswers={userAnswers}
-        questions={sampleQuestions}
+        questions={sampleData}
+       
         onRetakeQuiz={handleRetakeQuiz}
         onBackToHome={handleBackToHome}
       />

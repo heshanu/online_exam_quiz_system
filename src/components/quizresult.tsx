@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Badge } from "../components/ui/badge";
 import { Progress } from "../components/ui/progress";
 import { Trophy, RotateCcw, Share, Download, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Question } from "../models/question";
 
 interface QuizResultsProps {
   score: number;
@@ -10,12 +11,7 @@ interface QuizResultsProps {
   timeElapsed: number;
   correctAnswers: number[];
   userAnswers: number[];
-  questions: Array<{
-    id: number;
-    question: string;
-    options: string[];
-    correctAnswer: number;
-  }>;
+  questions:Question[];
   onRetakeQuiz: () => void;
   onBackToHome: () => void;
 }
@@ -135,14 +131,17 @@ export default function QuizResults({
                       )}
                       <div className="flex-1">
                         <div className="font-medium mb-2">
-                          Question {index + 1}: {question.question}
+                          Quest{{{{{{{{{{{{ion {index + 1}: {question.questionText}
                         </div>
                         
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center gap-2">
                             <span className="text-muted-foreground">Your answer:</span>
                             <Badge variant={isCorrect ? "default" : "destructive"}>
-                              {question.options[userAnswer]}
+                              {
+                              question.options[userAnswer]
+                              }
+
                             </Badge>
                           </div>
                           
