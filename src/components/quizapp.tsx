@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import QuizWelcome from "./quizwelcome";
 import QuizQuestion from "./quizquestion";
 import QuizResults from "./quizresult";
@@ -8,23 +7,26 @@ import { Question } from "../models/question";
 
 type QuizState = "welcome" | "quiz" | "results";
 
+// Define processed question type
+type ProcessedQuestion = Question & {
+  processedOptions: string[];
+};
+
 export default function QuizApp() {
   const [currentState, setCurrentState] = useState<QuizState>("welcome");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [startTime, setStartTime] = useState<number>(0);
   const [timeElapsed, setTimeElapsed] = useState<number>(0);
-  const [timeRemaining, setTimeRemaining] = useState<number>(900); // 15 minutes
+  const [timeRemaining, setTimeRemaining] = useState<number>(900);
   const { toast } = useToast();
+  const [sampleQuestions, setSampleQuestions] = useState<ProcessedQuestion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const [errors, setErrors] = useState(null);
-  const [sampleQuestions, setQuestions] = useState<Question[]>([]);
-  const [options2Array, setOpt] = useState<string[]>([]);
-
-  // Timer effect
+  // For Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (currentState === "quiz") {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
@@ -34,111 +36,112 @@ export default function QuizApp() {
           }
           return prev - 1;
         });
-        setTimeElapsed(Date.now() - startTime);
+        setTimeElapsed(Math.floor((Date.now() - startTime) / 1000));
       }, 1000);
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [currentState, startTime]);
+  }, [currentState, startTime]); 
 
-   useEffect(() => {
+  // Fetch questions from supabase
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch('http://localhost:3001/questions');
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-
+        if (!response.ok) throw new Error('Network response was not ok');
+        
         const data: Question[] = await response.json();
-        setQuestions(data);
-
-        if (data.length > 0 && data[currentQuestionIndex]?.options) {
-          // Directly set the options to the state
-          setOpt(
-            data[currentQuestionIndex].options
-              .map((option: string) => option.trim())
-          );
-        }
+        
+        // Pre-process all questions
+        const processed = data.map(q => ({
+          ...q,
+          processedOptions: q.options.split('\n').map((opt: string) => opt.trim())
+        }));
+        
+        setSampleQuestions(processed);
       } catch (error) {
-          //setErrors();
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : 'An unknown error occurred',
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [currentQuestionIndex]); // Include any other dependencies if necessary
+  }, []);
 
-  const handleStartQuiz = () => {
+  const handleStartQuiz = useCallback(() => {
     setCurrentState("quiz");
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setStartTime(Date.now());
     setTimeRemaining(900);
     setTimeElapsed(0);
+    
     toast({
       title: "Quiz Started!",
       description: "Good luck with your JavaScript fundamentals quiz.",
     });
-  };
+  }, [toast]);
 
-  const handleAnswerSelect = (answerIndex: number) => {
-    const newAnswers = [...userAnswers];
-    newAnswers[currentQuestionIndex] = answerIndex;
-    setUserAnswers(newAnswers);
-  };
+  const handleAnswerSelect = useCallback((answerIndex: number) => {
+    setUserAnswers(prev => {
+      const newAnswers = [...prev];
+      newAnswers[currentQuestionIndex] = answerIndex;
+      return newAnswers;
+    });
+  }, [currentQuestionIndex]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentQuestionIndex < sampleQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     }
-  };
+  }, [currentQuestionIndex, sampleQuestions.length]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     }
-  };
+  }, [currentQuestionIndex]);
 
-  const handleFinishQuiz = () => {
-    setTimeElapsed(Math.floor((Date.now() - startTime) / 1000));
+  const handleFinishQuiz = useCallback(() => {
     setCurrentState("results");
-    
-    const score = userAnswers.reduce((total, answer, index) => {
-      return total + (answer === sampleQuestions[index].correctAnswer ? 1 : 0);
-    }, 0);
-    
     toast({
       title: "Quiz Completed!",
-      description: `You scored ${score} out of ${sampleQuestions.length} questions.`,
+      description: `You scored ${calculateScore()} out of ${sampleQuestions.length} questions.`,
     });
-  };
+  }, [sampleQuestions.length, toast]);
 
-  const handleRetakeQuiz = () => {
+  const handleRetakeQuiz = useCallback(() => {
     setCurrentState("welcome");
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTimeElapsed(0);
     setTimeRemaining(900);
-  };
+  }, []);
 
-  const handleBackToHome = () => {
+  const handleBackToHome = useCallback(() => {
     setCurrentState("welcome");
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTimeElapsed(0);
     setTimeRemaining(900);
-  };
+  }, []);
 
-  const calculateScore = () => {
+  const calculateScore = useCallback(() => {
     return userAnswers.reduce((total, answer, index) => {
-      return total + (answer === sampleQuestions[index].correctAnswer ? 1 : 0);
+      return total + (answer === sampleQuestions[index]?.correctAnswer ? 1 : 0);
     }, 0);
-  };
+  }, [userAnswers, sampleQuestions]);
 
-  const currentQuestion = sampleQuestions[currentQuestionIndex];
-  const selectedAnswer = userAnswers[currentQuestionIndex];
+  // Show loading state
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading questions...</div>;
+  }
 
   if (currentState === "welcome") {
     return (
@@ -154,10 +157,13 @@ export default function QuizApp() {
   }
 
   if (currentState === "quiz") {
+    const currentQuestion = sampleQuestions[currentQuestionIndex];
+    const selectedAnswer = userAnswers[currentQuestionIndex];
+
     return (
       <QuizQuestion
         question={currentQuestion}
-        questionOption={options2Array}
+        questionOptions={currentQuestion.processedOptions}
         currentQuestionIndex={currentQuestionIndex}
         totalQuestions={sampleQuestions.length}
         selectedAnswer={selectedAnswer}
@@ -178,7 +184,7 @@ export default function QuizApp() {
         score={calculateScore()}
         totalQuestions={sampleQuestions.length}
         timeElapsed={timeElapsed}
-        correctAnswers={sampleQuestions.map((q: { correctAnswer:number; }) => q.correctAnswer)}
+        correctAnswers={sampleQuestions.map(q => q.correctAnswer)}
         userAnswers={userAnswers}
         questions={sampleQuestions}
         onRetakeQuiz={handleRetakeQuiz}
@@ -187,5 +193,5 @@ export default function QuizApp() {
     );
   }
 
-  return errors;
+  return null;
 }

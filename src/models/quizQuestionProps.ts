@@ -2,7 +2,7 @@ import { Question } from "./question";
 
 export interface QuizQuestionProps {
     question: Question;
-    questionOption: string[];
+     questionOptions:string[];
     currentQuestionIndex: number;
     totalQuestions: number;
     selectedAnswer?: number;

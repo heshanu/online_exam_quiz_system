@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radiogroup";
@@ -9,7 +8,7 @@ import { QuizQuestionProps } from "../models/quizQuestionProps";
 
 export default function QuizQuestion({
   question,
-  questionOption,
+  questionOptions,
   currentQuestionIndex,
   totalQuestions,
   selectedAnswer,
@@ -28,7 +27,6 @@ export default function QuizQuestion({
   const handleAnswerChange = (value: string) => {
     onAnswerSelect(parseInt(value));
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4">
@@ -54,7 +52,7 @@ export default function QuizQuestion({
         <Card className="shadow-lg border-border/50">
           <CardHeader>
             <CardTitle className="text-xl leading-relaxed">
-              {question.questionText? question.questionText:null}
+              {question.questionText}
             </CardTitle>
           </CardHeader>
 
@@ -64,7 +62,7 @@ export default function QuizQuestion({
               onValueChange={handleAnswerChange}
               className="space-y-3"
             >
-              { questionOption.map((option, index) => (
+              {questionOptions.map((option, index) => (
                 <div key={index} className="group">
                   <Label
                     htmlFor={`option-${index}`}
@@ -89,8 +87,7 @@ export default function QuizQuestion({
                     </div>
                   </Label>
                 </div>
-              ))} 
-              { question.options}
+              ))}
             </RadioGroup>
 
             {/* Navigation */}
