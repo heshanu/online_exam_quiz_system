@@ -4,29 +4,11 @@ import { RadioGroup, RadioGroupItem } from "../components/ui/radiogroup";
 import { Label } from "../components/ui/label";
 import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./ui/button";
-interface Question {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
-
-interface QuizQuestionProps {
-  question: Question;
-  currentQuestionIndex: number;
-  totalQuestions: number;
-  selectedAnswer?: number;
-  onAnswerSelect: (answerIndex: number) => void;
-  onNext: () => void;
-  onPrevious: () => void;
-  onFinish: () => void;
-  timeRemaining?: number;
-  isFirstQuestion: boolean;
-  isLastQuestion: boolean;
-}
+import { QuizQuestionProps } from "../models/quizQuestionProps";
 
 export default function QuizQuestion({
   question,
+  questionOptions,
   currentQuestionIndex,
   totalQuestions,
   selectedAnswer,
@@ -70,7 +52,7 @@ export default function QuizQuestion({
         <Card className="shadow-lg border-border/50">
           <CardHeader>
             <CardTitle className="text-xl leading-relaxed">
-              {question.question}
+              {question.questionText}
             </CardTitle>
           </CardHeader>
 
@@ -80,7 +62,7 @@ export default function QuizQuestion({
               onValueChange={handleAnswerChange}
               className="space-y-3"
             >
-              {question.options.map((option, index) => (
+              {questionOptions.map((option, index) => (
                 <div key={index} className="group">
                   <Label
                     htmlFor={`option-${index}`}
