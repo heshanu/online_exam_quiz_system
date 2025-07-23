@@ -131,7 +131,7 @@ export default function QuizResults({
                       )}
                       <div className="flex-1">
                         <div className="font-medium mb-2">
-                          Quest{{{{{{{{{{{{ion {index + 1}: {question.questionText}
+                          Question {index + 1}: {question.questionText}
                         </div>
                         
                         <div className="space-y-2 text-sm">
