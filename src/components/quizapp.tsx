@@ -1,130 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import QuizWelcome from "./quizwelcome";
 import QuizQuestion from "./quizquestion";
 import QuizResults from "./quizresult";
 import { useToast } from "../hooks/use-toast";
-
-interface Question {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
-
-const sampleQuestions: Question[] = [
-  {
-    id: 1,
-    question: "What is the correct syntax for creating a function in JavaScript?",
-    options: [
-      "function myFunction() {}",
-      "create myFunction() {}",
-      "function = myFunction() {}",
-      "def myFunction() {}"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 2,
-    question: "Which method is used to add an element to the end of an array?",
-    options: [
-      "append()",
-      "push()",
-      "add()",
-      "insert()"
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 3,
-    question: "What does 'DOM' stand for?",
-    options: [
-      "Document Object Model",
-      "Data Object Management",
-      "Dynamic Object Method",
-      "Document Oriented Markup"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 4,
-    question: "Which of the following is NOT a JavaScript data type?",
-    options: [
-      "String",
-      "Boolean",
-      "Float",
-      "Number"
-    ],
-    correctAnswer: 2
-  },
-  {
-    id: 5,
-    question: "How do you declare a variable in JavaScript?",
-    options: [
-      "var variableName;",
-      "let variableName;",
-      "const variableName = value;",
-      "All of the above"
-    ],
-    correctAnswer: 3
-  },
-  {
-    id: 6,
-    question: "What is the output of: console.log(typeof null)?",
-    options: [
-      "null",
-      "undefined",
-      "object",
-      "boolean"
-    ],
-    correctAnswer: 2
-  },
-  {
-    id: 7,
-    question: "Which operator is used for strict equality comparison?",
-    options: [
-      "==",
-      "===",
-      "=",
-      "!="
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 8,
-    question: "What is the purpose of the 'use strict' directive?",
-    options: [
-      "Makes JavaScript run faster",
-      "Enables strict mode for cleaner code",
-      "Prevents errors from being thrown",
-      "Allows newer JavaScript features"
-    ],
-    correctAnswer: 1
-  },
-  {
-    id: 9,
-    question: "Which method converts a string to lowercase?",
-    options: [
-      "toLowerCase()",
-      "toLower()",
-      "lower()",
-      "stringToLower()"
-    ],
-    correctAnswer: 0
-  },
-  {
-    id: 10,
-    question: "What is a closure in JavaScript?",
-    options: [
-      "A way to close the browser",
-      "A function with access to outer scope variables",
-      "A method to end a program",
-      "A type of loop"
-    ],
-    correctAnswer: 1
-  }
-];
+import { Question } from "../models/question";
 
 type QuizState = "welcome" | "quiz" | "results";
+
+// Define processed question type
+type ProcessedQuestion = Question & {
+  processedOptions: string[];
+};
 
 export default function QuizApp() {
   const [currentState, setCurrentState] = useState<QuizState>("welcome");
@@ -132,13 +18,15 @@ export default function QuizApp() {
   const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [startTime, setStartTime] = useState<number>(0);
   const [timeElapsed, setTimeElapsed] = useState<number>(0);
-  const [timeRemaining, setTimeRemaining] = useState<number>(900); // 15 minutes
+  const [timeRemaining, setTimeRemaining] = useState<number>(900);
   const { toast } = useToast();
+  const [sampleQuestions, setSampleQuestions] = useState<ProcessedQuestion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Timer effect
+  // For Timer effect
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
+
     if (currentState === "quiz") {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
@@ -148,84 +36,112 @@ export default function QuizApp() {
           }
           return prev - 1;
         });
-        setTimeElapsed(Date.now() - startTime);
+        setTimeElapsed(Math.floor((Date.now() - startTime) / 1000));
       }, 1000);
     }
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [currentState, startTime]);
+  }, [currentState, startTime]); 
 
-  const handleStartQuiz = () => {
+  // Fetch questions from supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/questions');
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data: Question[] = await response.json();
+        
+        // Pre-process all questions
+        const processed = data.map(q => ({
+          ...q,
+          processedOptions: q.options.split('\n').map((opt: string) => opt.trim())
+        }));
+        
+        setSampleQuestions(processed);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : 'An unknown error occurred',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleStartQuiz = useCallback(() => {
     setCurrentState("quiz");
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setStartTime(Date.now());
     setTimeRemaining(900);
     setTimeElapsed(0);
+    
     toast({
       title: "Quiz Started!",
       description: "Good luck with your JavaScript fundamentals quiz.",
     });
-  };
+  }, [toast]);
 
-  const handleAnswerSelect = (answerIndex: number) => {
-    const newAnswers = [...userAnswers];
-    newAnswers[currentQuestionIndex] = answerIndex;
-    setUserAnswers(newAnswers);
-  };
+  const handleAnswerSelect = useCallback((answerIndex: number) => {
+    setUserAnswers(prev => {
+      const newAnswers = [...prev];
+      newAnswers[currentQuestionIndex] = answerIndex;
+      return newAnswers;
+    });
+  }, [currentQuestionIndex]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentQuestionIndex < sampleQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     }
-  };
+  }, [currentQuestionIndex, sampleQuestions.length]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     }
-  };
+  }, [currentQuestionIndex]);
 
-  const handleFinishQuiz = () => {
-    setTimeElapsed(Math.floor((Date.now() - startTime) / 1000));
+  const handleFinishQuiz = useCallback(() => {
     setCurrentState("results");
-    
-    const score = userAnswers.reduce((total, answer, index) => {
-      return total + (answer === sampleQuestions[index].correctAnswer ? 1 : 0);
-    }, 0);
-    
     toast({
       title: "Quiz Completed!",
-      description: `You scored ${score} out of ${sampleQuestions.length} questions.`,
+      description: `You scored ${calculateScore()} out of ${sampleQuestions.length} questions.`,
     });
-  };
+  }, [sampleQuestions.length, toast]);
 
-  const handleRetakeQuiz = () => {
+  const handleRetakeQuiz = useCallback(() => {
     setCurrentState("welcome");
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTimeElapsed(0);
     setTimeRemaining(900);
-  };
+  }, []);
 
-  const handleBackToHome = () => {
+  const handleBackToHome = useCallback(() => {
     setCurrentState("welcome");
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTimeElapsed(0);
     setTimeRemaining(900);
-  };
+  }, []);
 
-  const calculateScore = () => {
+  const calculateScore = useCallback(() => {
     return userAnswers.reduce((total, answer, index) => {
-      return total + (answer === sampleQuestions[index].correctAnswer ? 1 : 0);
+      return total + (answer === sampleQuestions[index]?.correctAnswer ? 1 : 0);
     }, 0);
-  };
+  }, [userAnswers, sampleQuestions]);
 
-  const currentQuestion = sampleQuestions[currentQuestionIndex];
-  const selectedAnswer = userAnswers[currentQuestionIndex];
+  // Show loading state
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading questions...</div>;
+  }
 
   if (currentState === "welcome") {
     return (
@@ -241,9 +157,13 @@ export default function QuizApp() {
   }
 
   if (currentState === "quiz") {
+    const currentQuestion = sampleQuestions[currentQuestionIndex];
+    const selectedAnswer = userAnswers[currentQuestionIndex];
+
     return (
       <QuizQuestion
         question={currentQuestion}
+        questionOptions={currentQuestion.processedOptions}
         currentQuestionIndex={currentQuestionIndex}
         totalQuestions={sampleQuestions.length}
         selectedAnswer={selectedAnswer}
