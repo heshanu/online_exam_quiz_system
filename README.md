@@ -16,6 +16,9 @@ _Live Example: https://vite-react-example.vercel.app_
 
 <img src="https://github.com/heshanu/online_exam_quiz_system/blob/main/mcq%20question%20system%20class%20diagram-Page-2.drawio.png"/>
 
+[![Project Structure]](https://githubtree.mgks.dev/repo/heshanu/online_exam_quiz_system/dev/)
+
 ```shell
-$ vercel
+[]$ vercel
+
 ```
