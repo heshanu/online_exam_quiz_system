@@ -1,5 +1,5 @@
 // src/components/Login.jsx
-import  { useState } from 'react';
+import { useState } from 'react';
 import { Button } from './ui/button';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,35 +10,35 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const handleSubmit = (event: React.FormEvent) => {
-  event.preventDefault();
-  
-  // Basic validation
-  if (!email.trim() || !password.trim()) {
-    alert('Please fill in all fields');
-    return;
-  }
+    event.preventDefault();
 
-  // Enhanced email validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    alert('Please enter a valid email address');
-    return;
-  }
+    // Basic validation
+    if (!email.trim() || !password.trim()) {
+      alert('Please fill in all fields');
+      return;
+    }
 
-  // Password length validation
-  if (password.length < 6) {
-    alert('Password must be at least 6 characters');
-    return;
-  }
+    // Enhanced email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    // Password length validation
+    if (password.length < 6) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
 
     navigate("/home");
-  // Handle login logic
-  console.log('Email:', email);
-  console.log('Password:', password);
-  
-  // Add your actual login/API call here
-  // loginUser(email, password);
-};
+    // Handle login logic
+    console.log('Email:', email);
+    console.log('Password:', password);
+
+    // Add your actual login/API call here
+    // loginUser(email, password);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
@@ -63,6 +63,7 @@ const LoginPage = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+              <h3>Any Email you prefered</h3>
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-300">
@@ -78,6 +79,7 @@ const LoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <h3>Any word you prefered,must be greater than 6 charaters </h3>
             </div>
           </div>
 
@@ -102,14 +104,14 @@ const LoginPage = () => {
           </div>
 
           <div>
-           <Button 
-            onClick={handleSubmit} 
-            size="lg" 
-            className="w-full h-12 text-lg font-semibold"
-            variant="cozy"
+            <Button
+              onClick={handleSubmit}
+              size="lg"
+              className="w-full h-12 text-lg font-semibold"
+              variant="cozy"
             >
-            Submit 
-          </Button>
+              Submit
+            </Button>
           </div>
         </form>
         <div className="text-center text-sm text-gray-400">
