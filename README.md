@@ -1,16 +1,27 @@
-# React + TypeScript + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-While this project uses React, Vite supports many popular JS frameworks. [See all the supported frameworks](https://vitejs.dev/guide/#scaffolding-your-first-vite-project).
+# Online MCQ System
+.
+While this project uses React, Vite supports many popular JS frameworks. [See all the supported frameworks](https://github.com/heshanu/online_exam_quiz_system).
 
 ## Deploy Your Own
 
 Deploy your own Vite project with Vercel.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/vercel/examples/tree/main/framework-boilerplates/vite-react&template=vite-react)
+# Exam Portal Application
 
-_Live Example: https://vite-react-example.vercel.app_
+A full-stack exam platform built with React, Node.js, and Supabase.
+
+## Features
+- Login 
+- Exam Paper list
+- MCQ Exam attempts
+- Result Views
+
+## Technologies
+- **Frontend**: React (Vite), TypeScript
+- **Backend**: Node.js/Express
+- **Database**: Supabase (PostgreSQL)
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel , I couldnt deploy to backend 
 
 ## class diagram for MCQ Question System
 
@@ -18,7 +29,21 @@ _Live Example: https://vite-react-example.vercel.app_
 
 [![Project Structure]](https://githubtree.mgks.dev/repo/heshanu/online_exam_quiz_system/dev/)
 
-```shell
-[]$ vercel
+## Setup Instructions
 
-```
+### 1. Clone repository
+```bash
+git clone https://github.com/heshanu/online_exam_quiz_system.git
+cd exam-portal
+
+# To add to your project:
+1. Create new file `README.md` in root directory
+2. Paste this content
+3. Customize with your project details
+4. Commit and push:
+```bash
+git add README.md
+git commit -m "Add project README"
+git push- 
+
+
