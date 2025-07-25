@@ -7,21 +7,29 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import NotFound from "./page/notfound";
 import Index from "./page";
 import QuizApp from "./components/quizapp";
+import ExamListPage from "./components/examList";
+import {QuestionProvider } from './context/questionContext';
+
 const queryClient = new QueryClient();
+
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <QuestionProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/home" element={<QuizApp/>} />
+          <Route path="/quiz" element={<QuizApp />} />
+           <Route path="/home" element={<ExamListPage/>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </QuestionProvider>
+      
     </TooltipProvider>
   </QueryClientProvider>
 );
