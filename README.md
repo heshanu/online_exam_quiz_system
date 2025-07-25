@@ -45,5 +45,10 @@ cd exam-portal
 git add README.md
 git commit -m "Add project README"
 git push- 
+```
+## login credentials
+email -any email 
+password -any alpha numeric word with at least 6 digit lenght 
 
 
+33
